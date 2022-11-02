@@ -1,0 +1,60 @@
+#include "mbed.h"
+#include "uLCD_4DGL.h"
+
+
+uLCD_4DGL uLCD(D1, D0, D2);
+InterruptIn sw2(BUTTON1);
+EventQueue queue(32 * EVENTS_EVENT_SIZE);
+Thread t;
+Timer timer;
+int x=0;
+
+void led1_info() {
+   // Note that printf is deferred with a call in the queue
+   // It is not executed in the interrupt context
+    if (x==1){
+    timer.reset();
+    uLCD.printf ("Timer reset \n");
+    ThisThread::sleep_for(1s);
+    uLCD.cls(); }
+    timer.stop();
+    if (x==2){
+    timer.start();
+    uLCD.printf ("Timer start \n");
+    ThisThread::sleep_for(1s);
+    uLCD.cls(); }
+    if (x==3){
+    timer.stop();
+    uLCD.printf ("Timer stop \n");
+    auto s = chrono::duration_cast<chrono::seconds>(timer.elapsed_time()).count();
+    uLCD.printf ("Timer : %llu s\n", s);
+    ThisThread::sleep_for(1s);
+    }
+}
+
+void Trig_led1()  {
+    // Execute the time critical part first
+    // The rest can execute later in user context
+    x++;
+    queue.call(led1_info);
+}
+
+int main() {
+    timer.start();
+    printf("timer start");
+    //while (1){ 
+    //auto s = chrono::duration_cast<chrono::seconds>(timer.elapsed_time()).count();
+    //printf ("Timer : %llu s\n", s);
+    //ThisThread::sleep_for(1s);
+    t.start(callback(&queue, &EventQueue::dispatch_forever));
+    sw2.rise(Trig_led1);
+   // t is a thread to process tasks in an EventQueue
+   // call in queue is now executed in the context of the thread
+   // t call queue.dispatch_forever() to start the scheduler of the EventQueue
+   //t.start(callback(&queue, &EventQueue::dispatch_forever));
+   // 'Trig_led1' will execute in IRQ context
+   //sw2.rise(Trig_led1);
+}
+
+
+
