@@ -1,0 +1,79 @@
+#include "mbed.h"
+
+Thread thread_master;
+Thread thread_slave;
+
+// master
+
+SPI spi(D11, D12, D13); // mosi, miso, sclk
+DigitalOut cs(D9);
+
+SPISlave device(PD_4, PD_3, PD_1, PD_0); // mosi, miso, sclk, cs; PMOD pins
+
+
+int slave() {
+  device.format(8, 3);
+  device.frequency(1000000);
+  int8_t note=0, length=0, v=0;
+  static int8_t note_played=0;
+  device.reply(note); // Prime SPI with first reply
+  while (1) {
+    if (device.receive()) {
+
+      note = device.read();   // Read note from master
+      length = device.read(); // Read length from master
+
+      note_played++;
+      printf("Slave: Number of note played = %d\n", note_played);
+      device.reply(note_played); // Make this the next reply
+      v = device.read();         // Send to master
+
+      //queue_note.call(playNote, note, length);
+    }
+  }
+}
+
+
+void master() {
+  int8_t note=0, length=3, v=0;
+  int response;
+
+
+  // Setup the spi for 8 bit data, high steady state clock,
+  // second edge capture, with a 1MHz clock rate
+  spi.format(8, 3);
+  spi.frequency(1000000);
+
+    //for (int i = 0 ; i < 3 ; i++){
+    cs = 1;
+
+    cs = 0;
+
+    printf("Start.\n");
+
+    printf("Send note = %d\n", note);     // send value
+    spi.write(note); // Send Mode 0x02 = 1 
+    cs=1;
+    ThisThread::sleep_for(100ms);   // Wait for debug print
+
+    cs=0;
+    printf("Send length = %d\n", length);     // send value
+    spi.write(length);   
+    
+    cs=1;         // Send value to slave
+    ThisThread::sleep_for(100ms); // Wait for debug print
+    
+   
+    response = spi.write(length); // Read slave reply
+    ThisThread::sleep_for(100ms); // Wait for debug print
+    //printf("recieve value = %d\n", response);
+    //}
+}
+
+
+int main() {
+  thread_slave.start(slave);
+  thread_master.start(master);
+}
+
+
