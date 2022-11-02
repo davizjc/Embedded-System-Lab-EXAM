@@ -18,13 +18,14 @@ void led2_thread()
         ThisThread::sleep_for(1s);
         myled.write(0);
         ThisThread::sleep_for(1s);
-        myled = 1; // short     
-        printf(" S \n\r");
- 
+        myled = 1; // short      
         ThisThread::sleep_for(1s);
         myled.write(0);
         ThisThread::sleep_for(3s);                          //s end  3sec pin is low
         ok = 1;
+        if (ok == 1){
+            printf(" S \n\r");
+        lcd.putc(0x53);  }
                                                             
         myled = 1;    //long                                      // o start
         ThisThread::sleep_for(3s);
@@ -41,6 +42,10 @@ void led2_thread()
         myled.write(0);
         ThisThread::sleep_for(3s);                          // O end 3 sec pin is 3
         ok = 2;
+        if (ok == 2){
+        printf(" O \n\r");
+        lcd.putc(0x4F);           // ‘O’
+    }
 
         myled = 1; // short                  // s begin
         ThisThread::sleep_for(1s);
@@ -56,24 +61,18 @@ void led2_thread()
         myled.write(0);
         ThisThread::sleep_for(3s);                     //s end 
         ok = 3;
+    if (ok == 3){
+        printf(" S \n\r");
+        lcd.putc(0x53);           // ‘s'
+    }
 }
 
 int main()
 {
    thread.start(led2_thread);
 
-    if (ok == 1){
-        printf(" S \n\r");
-        lcd.putc(0x53);           // ‘s'
-    }
-    if (ok == 2){
-        printf(" O \n\r");
-        lcd.putc(0x4F);           // ‘O’
-    }
-    if (ok == 3){
-        printf(" S \n\r");
-        lcd.putc(0x53);           // ‘s'
-    }
+  
+
 }
 
 
