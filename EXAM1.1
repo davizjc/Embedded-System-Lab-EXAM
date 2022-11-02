@@ -35,9 +35,7 @@ void led2_thread()
         ThisThread::sleep_for(3s);
         myled.write(0);
         ThisThread::sleep_for(1s);
-        myled = 1;           //long    
-        printf(" O \n\r");
-                             
+        myled = 1;           //long                                 
         ThisThread::sleep_for(3s);
         myled.write(0);
         ThisThread::sleep_for(3s);                          // O end 3 sec pin is 3
@@ -56,7 +54,6 @@ void led2_thread()
         myled.write(0);
         ThisThread::sleep_for(1s);
         myled = 1; // short   
-        printf(" S \n\r");
         ThisThread::sleep_for(1s);
         myled.write(0);
         ThisThread::sleep_for(3s);                     //s end 
@@ -74,6 +71,9 @@ int main()
   
 
 }
+
+
+
 
 
 
