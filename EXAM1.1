@@ -1,0 +1,80 @@
+#include "mbed.h"
+#include "TextLCD.h"
+I2C i2c_lcd(D14, D15); // SDA, SCL
+TextLCD_I2C lcd(&i2c_lcd, 0x4E, TextLCD::LCD16x2);
+// main() runs in its own thread in the OS
+
+DigitalOut myled(LED1);
+Thread thread;
+int ok= 0;
+
+void led2_thread()
+{
+        myled = 1; //short              // s begin
+        ThisThread::sleep_for(1s);
+        myled.write(0);
+        ThisThread::sleep_for(1s);
+        myled = 1; // short      
+        ThisThread::sleep_for(1s);
+        myled.write(0);
+        ThisThread::sleep_for(1s);
+        myled = 1; // short     
+        printf(" S \n\r");
+ 
+        ThisThread::sleep_for(1s);
+        myled.write(0);
+        ThisThread::sleep_for(3s);                          //s end  3sec pin is low
+        ok = 1;
+                                                            
+        myled = 1;    //long                                      // o start
+        ThisThread::sleep_for(3s);
+        myled.write(0);
+        ThisThread::sleep_for(1s);
+        myled = 1;         //long                                  
+        ThisThread::sleep_for(3s);
+        myled.write(0);
+        ThisThread::sleep_for(1s);
+        myled = 1;           //long    
+        printf(" O \n\r");
+                             
+        ThisThread::sleep_for(3s);
+        myled.write(0);
+        ThisThread::sleep_for(3s);                          // O end 3 sec pin is 3
+        ok = 2;
+
+        myled = 1; // short                  // s begin
+        ThisThread::sleep_for(1s);
+        myled.write(0);
+        ThisThread::sleep_for(1s);
+        myled = 1; // short      
+        ThisThread::sleep_for(1s);
+        myled.write(0);
+        ThisThread::sleep_for(1s);
+        myled = 1; // short   
+        printf(" S \n\r");
+        ThisThread::sleep_for(1s);
+        myled.write(0);
+        ThisThread::sleep_for(3s);                     //s end 
+        ok = 3;
+}
+
+int main()
+{
+   thread.start(led2_thread);
+
+    if (ok == 1){
+        printf(" S \n\r");
+        lcd.putc(0x53);           // ‘s'
+    }
+    if (ok == 2){
+        printf(" O \n\r");
+        lcd.putc(0x4F);           // ‘O’
+    }
+    if (ok == 3){
+        printf(" S \n\r");
+        lcd.putc(0x53);           // ‘s'
+    }
+}
+
+
+
